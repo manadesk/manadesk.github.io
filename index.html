@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AP TET Response Score Calculator</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f4f6fb}
+*{box-sizing:border-box}body{margin:0;padding:24px}main{max-width:1100px;margin:auto}
+h1{margin:0 0 8px;font-size:clamp(25px,4vw,36px)}p{color:#657086;line-height:1.5}
+.panel{background:#fff;border:1px solid #e1e6ef;border-radius:16px;padding:20px;margin:18px 0;box-shadow:0 4px 16px #15264a08}
+label{display:block;font-weight:650;margin:0 0 8px}
+textarea{width:100%;min-height:260px;resize:vertical;border:1px solid #cbd3e1;border-radius:10px;padding:13px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:#172033;background:#fcfdff}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+button{border:0;border-radius:9px;padding:11px 16px;font:600 14px system-ui;cursor:pointer}
+.primary{background:#3157c8;color:#fff}.secondary{background:#edf1f8;color:#24324a}
+button:hover{filter:brightness(.97)}.hint{font-size:13px}
+.error{color:#b42318;background:#fff0ef;border:1px solid #ffd3cf;padding:12px;border-radius:9px;margin-top:12px;white-space:pre-wrap}
+.hidden{display:none!important}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.metric{border:1px solid #e5e9f1;border-radius:12px;padding:16px;background:#fff}
+.metric .k{font-size:13px;color:#657086}.metric .v{font-size:27px;font-weight:750;margin-top:4px}.green{color:#16803d}.red{color:#c43232}
+.bar{height:9px;border-radius:20px;background:#e9edf5;overflow:hidden;margin-top:10px}.bar span{height:100%;display:block;background:#16803d}
+.section-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.section{border:1px solid #e1e6ef;border-radius:12px;padding:14px}.section strong{display:block;margin-bottom:6px}.section small{color:#657086}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:600px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5e9f1}th{font-size:12px;color:#657086;text-transform:uppercase}
+.status{font-size:12px;border-radius:30px;padding:4px 8px;font-weight:700}.correct{background:#e7f6ec;color:#126b31}.wrong{background:#fdecec;color:#a62121}.full{background:#fff2cc;color:#805b00}
+#result h2{margin-top:0}.muted{color:#657086;font-size:13px}
+@media(max-width:700px){body{padding:12px}.panel{padding:14px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.section-list{grid-template-columns:1fr}.metric .v{font-size:23px}}
+@media print{body{background:white;padding:0}.input-panel,.actions{display:none!important}.panel{box-shadow:none;break-inside:avoid}}
+</style>
+</head>
+<body>
+<main>
+  <h1>AP TET Response Score Calculator</h1>
+  <p>Paste the complete JSON response from the browser Network tab. This page calculates the total score and section-wise breakdown in your browser. Nothing is uploaded to a server.</p>
+
+  <section class="panel input-panel">
+    <label for="jsonInput">Paste response JSON here</label>
+    <textarea id="jsonInput" spellcheck="false" placeholder='Paste the complete response beginning with { "status": true, ... }'></textarea>
+    <div class="actions">
+      <button class="primary" id="calculateBtn">Calculate score</button>
+      <button class="secondary" id="pasteExampleBtn" type="button">Load example structure</button>
+      <button class="secondary" id="clearBtn" type="button">Clear</button>
+    </div>
+    <div id="error" class="error hidden" role="alert"></div>
+    <p class="hint">Expected structure: <code>data → Participant Details</code> and <code>data → Question Wise Details</code>. You can paste the full response, not just the questions array.</p>
+  </section>
+
+  <div id="result" class="hidden">
+    <section class="panel">
+      <h2 id="paperTitle">Result summary</h2>
+      <div class="cards">
+        <div class="metric"><div class="k">Total score (from response)</div><div class="v" id="scoreValue">—</div><div class="muted" id="scorePercent"></div><div class="bar"><span id="scoreBar"></span></div></div>
+        <div class="metric"><div class="k">Correct (without full marked questions (reported)</div><div class="v green" id="correctValue">—</div></div>
+        <div class="metric"><div class="k">Wrong (reported)</div><div class="v red" id="wrongValue">—</div></div>
+        <div class="metric"><div class="k">Questions in response</div><div class="v" id="totalValue">—</div><div class="muted" id="attemptedValue"></div></div>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Section-wise breakdown</h2>
+      <div class="section-list" id="sectionList"></div>
+    </section>
+    <section class="panel">
+      <h2>Question details</h2>
+      <div class="table-wrap"><table><thead><tr><th>Question</th><th>Section</th><th>Selected</th><th>Correct</th><th>Result</th><th>Score</th></tr></thead><tbody id="questionRows"></tbody></table></div>
+      <p class="muted">The total score and answer statuses are taken from the pasted response. Full Marks may be scored differently from a simple correct/wrong count. The page does not independently verify the official final key.</p>
+    </section>
+  </div>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = value => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+function getData(parsed) {
+  // Accept either the full API response or the inner "data" object.
+  const root = parsed && parsed.data ? parsed.data : parsed;
+  if (!root || !Array.isArray(root["Question Wise Details"])) {
+    throw new Error('Could not find "Question Wise Details". Paste the complete JSON response from the Network request.');
+  }
+  const questions = root["Question Wise Details"];
+  const participant = Array.isArray(root["Participant Details"]) ? (root["Participant Details"][0] || {}) : {};
+  if (!questions.length) throw new Error('The "Question Wise Details" array is empty.');
+  return {participant, questions};
+}
+function pill(result) {
+  const cls = result === "Wrong" ? "wrong" : result === "Full Marks" ? "full" : result === "Correct" ? "correct" : "";
+  return `<span class="status ${cls}">${esc(result || "Unknown")}</span>`;
+}
+function calculate() {
+  $("error").classList.add("hidden");
+  let parsed;
+  try {
+    parsed = JSON.parse($("jsonInput").value.trim());
+  } catch (e) {
+    $("error").textContent = "Invalid JSON. Copy the complete response, including the opening and closing braces.\nDetails: " + e.message;
+    $("error").classList.remove("hidden");
+    return;
+  }
+  let payload;
+  try { payload = getData(parsed); }
+  catch (e) {
+    $("error").textContent = e.message;
+    $("error").classList.remove("hidden");
+    return;
+  }
+  const {participant, questions} = payload;
+  const total = num(participant["Total Questions"]) || questions.length;
+  const maxMarks = num(participant["Maximum Marks"]) || total;
+  const reportedScore = participant["Score"] !== undefined && participant["Score"] !== ""
+    ? num(participant["Score"])
+    : questions.reduce((sum, q) => sum + num(q["Score"]), 0);
+  const reportedCorrect = participant["Total Correct"] !== undefined && participant["Total Correct"] !== ""
+    ? num(participant["Total Correct"])
+    : questions.filter(q => q["Result"] === "Correct").length;
+  const reportedWrong = participant["Total Wrong"] !== undefined && participant["Total Wrong"] !== ""
+    ? num(participant["Total Wrong"])
+    : questions.filter(q => q["Result"] === "Wrong").length;
+  const attempted = participant["Questions Attempted"] !== undefined && participant["Questions Attempted"] !== ""
+    ? num(participant["Questions Attempted"])
+    : questions.filter(q => String(q["Question Status"] || "").toLowerCase() === "answered").length;
+
+  $("paperTitle").textContent = (participant["Subject"] || participant["Question Paper Name"] || "Result summary") + " — score summary";
+  $("scoreValue").textContent = `${reportedScore} / ${maxMarks}`;
+  $("scorePercent").textContent = `${maxMarks ? (reportedScore / maxMarks * 100).toFixed(2) : "0.00"}% of maximum marks`;
+  $("scoreBar").style.width = `${Math.max(0, Math.min(100, maxMarks ? reportedScore / maxMarks * 100 : 0))}%`;
+  $("correctValue").textContent = reportedCorrect;
+  $("wrongValue").textContent = reportedWrong;
+  $("totalValue").textContent = questions.length;
+  $("attemptedValue").textContent = `${attempted} attempted · ${Math.max(0, total-attempted)} not attempted (reported)`;
+
+  const grouped = new Map();
+  questions.forEach(q => {
+    const name = q["Section Name"] || "Unknown section";
+    if (!grouped.has(name)) grouped.set(name, []);
+    grouped.get(name).push(q);
+  });
+  $("sectionList").innerHTML = [...grouped.entries()].map(([name, arr]) => {
+    const score = arr.reduce((s,q) => s + num(q["Score"]), 0);
+    const max = arr.length;
+    const correct = arr.filter(q => q["Result"] === "Correct").length;
+    const wrong = arr.filter(q => q["Result"] === "Wrong").length;
+    const full = arr.filter(q => q["Result"] === "Full Marks").length;
+    const percent = max ? score/max*100 : 0;
+    return `<div class="section"><strong>${esc(name)}</strong><div><b>${score} / ${max}</b> · ${percent.toFixed(2)}%</div><div class="bar"><span style="width:${percent}%"></span></div><small>Correct: ${correct} · Wrong: ${wrong} · Full marks: ${full}</small></div>`;
+  }).join("");
+
+  const sorted = [...questions].sort((a,b) => num(a["Question Sr No"]) - num(b["Question Sr No"]));
+  $("questionRows").innerHTML = sorted.map(q => `<tr>
+    <td>${esc(q["Question Sr No"] || "—")}</td>
+    <td>${esc(q["Section Name"] || "Unknown section")}</td>
+    <td>${esc(q["Selected Option Number"] || q["Selected Option Text"] || "—")}</td>
+    <td>${esc(q["Correct Option Text"] || "—")}</td>
+    <td>${pill(q["Result"])}</td>
+    <td>${num(q["Score"])}</td>
+  </tr>`).join("");
+  $("result").classList.remove("hidden");
+  $("result").scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("calculateBtn").addEventListener("click", calculate);
+$("clearBtn").addEventListener("click", () => {
+  $("jsonInput").value = "";
+  $("error").classList.add("hidden");
+  $("result").classList.add("hidden");
+  $("jsonInput").focus();
+});
+$("pasteExampleBtn").addEventListener("click", () => {
+  $("jsonInput").value = JSON.stringify({
+    status: true,
+    data: {
+      "Participant Details": [{
+        "Subject": "Example Paper",
+        "Total Questions": "2",
+        "Questions Attempted": "2",
+        "Total Correct": "1",
+        "Total Wrong": "1",
+        "Score": "1",
+        "Maximum Marks": "2"
+      }],
+      "Question Wise Details": [
+        {"Question Sr No":"1","Section Name":"Section A","Selected Option Number":"2","Correct Option Text":"2","Result":"Correct","Score":"1","Question Status":"answered"},
+        {"Question Sr No":"2","Section Name":"Section B","Selected Option Number":"1","Correct Option Text":"3","Result":"Wrong","Score":"0","Question Status":"answered"}
+      ]
+    }
+  }, null, 2);
+});
+</script>
+</body>
+</html>
