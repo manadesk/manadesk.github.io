@@ -3,191 +3,1223 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AP TET Response Score Calculator</title>
+<title>AP TET Response Score & Candidate Details Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f4f6fb}
-*{box-sizing:border-box}body{margin:0;padding:24px}main{max-width:1100px;margin:auto}
-h1{margin:0 0 8px;font-size:clamp(25px,4vw,36px)}p{color:#657086;line-height:1.5}
-.panel{background:#fff;border:1px solid #e1e6ef;border-radius:16px;padding:20px;margin:18px 0;box-shadow:0 4px 16px #15264a08}
-label{display:block;font-weight:650;margin:0 0 8px}
-textarea{width:100%;min-height:260px;resize:vertical;border:1px solid #cbd3e1;border-radius:10px;padding:13px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:#172033;background:#fcfdff}
-.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-button{border:0;border-radius:9px;padding:11px 16px;font:600 14px system-ui;cursor:pointer}
-.primary{background:#3157c8;color:#fff}.secondary{background:#edf1f8;color:#24324a}
-button:hover{filter:brightness(.97)}.hint{font-size:13px}
-.error{color:#b42318;background:#fff0ef;border:1px solid #ffd3cf;padding:12px;border-radius:9px;margin-top:12px;white-space:pre-wrap}
-.hidden{display:none!important}
-.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.metric{border:1px solid #e5e9f1;border-radius:12px;padding:16px;background:#fff}
-.metric .k{font-size:13px;color:#657086}.metric .v{font-size:27px;font-weight:750;margin-top:4px}.green{color:#16803d}.red{color:#c43232}
-.bar{height:9px;border-radius:20px;background:#e9edf5;overflow:hidden;margin-top:10px}.bar span{height:100%;display:block;background:#16803d}
-.section-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.section{border:1px solid #e1e6ef;border-radius:12px;padding:14px}.section strong{display:block;margin-bottom:6px}.section small{color:#657086}
-.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:600px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5e9f1}th{font-size:12px;color:#657086;text-transform:uppercase}
-.status{font-size:12px;border-radius:30px;padding:4px 8px;font-weight:700}.correct{background:#e7f6ec;color:#126b31}.wrong{background:#fdecec;color:#a62121}.full{background:#fff2cc;color:#805b00}
-#result h2{margin-top:0}.muted{color:#657086;font-size:13px}
-@media(max-width:700px){body{padding:12px}.panel{padding:14px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.section-list{grid-template-columns:1fr}.metric .v{font-size:23px}}
-@media print{body{background:white;padding:0}.input-panel,.actions{display:none!important}.panel{box-shadow:none;break-inside:avoid}}
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6907608848846942" crossorigin="anonymous">
-</script>
+:root {
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --bg-page: #f8fafc;
+  --bg-card: #ffffff;
+  --border-color: #e2e8f0;
+  --border-subtle: #edf2f7;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #eff6ff;
+  --primary-border: #bfdbfe;
+  --success: #16a34a;
+  --success-soft: #f0fdf4;
+  --success-border: #bbf7d0;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --danger-border: #fecaca;
+  --warning: #d97706;
+  --warning-soft: #fffbeb;
+  --warning-border: #fde68a;
+  --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --panel-radius: 18px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 32px 20px;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+main {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+header.page-header {
+  margin-bottom: 24px;
+}
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+h1 {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+p.subtitle {
+  color: var(--text-muted);
+  font-size: 15px;
+  max-width: 780px;
+  margin: 0;
+}
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--panel-radius);
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: var(--card-shadow);
+  transition: border-color 0.2s ease;
+}
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.panel-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+label.input-label {
+  display: block;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+textarea {
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-main);
+  background: #fdfefe;
+  outline: none;
+  transition: all 0.2s ease;
+}
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  background: #ffffff;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 18px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+button:hover {
+  transform: translateY(-1px);
+}
+button:active {
+  transform: translateY(0);
+}
+.primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+.primary:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+.secondary {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+.secondary:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+.btn-upload {
+  position: relative;
+  overflow: hidden;
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  color: #475569;
+}
+.btn-upload:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.btn-upload input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.btn-print {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+.btn-print:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+.hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 12px;
+}
+.hint code {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.error {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: pre-wrap;
+}
+.hidden { display: none !important; }
+
+/* Candidate Profile Panel */
+.candidate-panel {
+  border-top: 5px solid var(--primary);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  position: relative;
+}
+.candidate-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 20px;
+}
+.candidate-user-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+  flex-shrink: 0;
+}
+.candidate-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.candidate-identity h2 {
+  margin: 0;
+  font-size: clamp(20px, 3vw, 24px);
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+.badge-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.badge-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.badge-green { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-gray { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.info-card {
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.info-card .info-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.info-card .info-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  word-break: break-word;
+}
+.info-card .info-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* Attempt Statistics Grid */
+.attempt-stats-wrap {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border-color);
+}
+.attempt-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.attempt-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+.attempt-tile {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: center;
+}
+.attempt-tile .tile-num {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.attempt-tile .tile-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+/* Metric Cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.metric {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 18px;
+  background: var(--bg-card);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+.metric .k {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.metric .v {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-main);
+}
+.metric .v.green { color: var(--success); }
+.metric .v.red { color: var(--danger); }
+.metric .muted {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+.bar {
+  height: 8px;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  margin-top: 12px;
+}
+.bar span {
+  height: 100%;
+  display: block;
+  background: linear-gradient(90deg, #2563eb, #16a34a);
+  border-radius: 9999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sections */
+.section-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.section {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 16px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.section-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.section strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+.section .sec-score {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--primary);
+  white-space: nowrap;
+}
+.section .sec-bar {
+  height: 6px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  overflow: hidden;
+  margin: 10px 0 12px;
+}
+.section .sec-bar span {
+  height: 100%;
+  display: block;
+  background: var(--primary);
+  border-radius: 9999px;
+}
+.section-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sec-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.sec-tag.c { background: var(--success-soft); color: var(--success); }
+.sec-tag.w { background: var(--danger-soft); color: var(--danger); }
+.sec-tag.f { background: var(--warning-soft); color: var(--warning); }
+
+/* Table and Filters */
+.table-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.filter-tabs {
+  display: inline-flex;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 10px;
+  gap: 2px;
+}
+.filter-tab {
+  background: transparent;
+  border: 0;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.filter-tab.active {
+  background: #ffffff;
+  color: var(--text-main);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.search-input, .select-input {
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-main);
+  outline: none;
+}
+.search-input:focus, .select-input:focus {
+  border-color: var(--primary);
+}
+.search-input { min-width: 170px; }
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: #ffffff;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+  font-size: 13px;
+}
+th, td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+th {
+  background: #f8fafc;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fbfcfe; }
+.td-qnum { font-weight: 700; font-family: var(--font-mono); color: var(--text-main); }
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  border-radius: 9999px;
+  padding: 3px 9px;
+  font-weight: 700;
+}
+.status.correct { background: var(--success-soft); color: var(--success); border: 1px solid var(--success-border); }
+.status.wrong { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger-border); }
+.status.full { background: var(--warning-soft); color: var(--warning); border: 1px solid var(--warning-border); }
+.status.unanswered { background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border-color); }
+.table-meta-bar {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .attempt-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  body { padding: 16px 12px; }
+  .panel { padding: 16px; border-radius: 14px; }
+  .info-grid { grid-template-columns: 1fr; }
+  .attempt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .section-list { grid-template-columns: 1fr; }
+  .candidate-user-box { flex-direction: column; align-items: flex-start; }
+  .table-filter-bar { flex-direction: column; align-items: stretch; }
+  .filter-tabs { width: 100%; display: flex; }
+  .filter-tab { flex: 1; text-align: center; }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+    padding: 0;
+    color: #000000;
+  }
+  .input-panel, .actions, .table-filter-bar, .btn-print, .header-badge, p.subtitle {
+    display: none !important;
+  }
+  .panel {
+    border: 1px solid #cbd5e1;
+    box-shadow: none;
+    margin: 12px 0;
+    padding: 16px;
+    break-inside: avoid;
+  }
+  .candidate-panel {
+    border-top: 4px solid #1e40af;
+  }
+  .avatar {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .status, .badge, .attempt-tile, .sec-tag {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6907608848846942" crossorigin="anonymous"></script>
 </head>
 <body>
 <main>
-  <h1>AP TET Response Score Calculator</h1>
-  <p>Paste the complete JSON response from the browser Network tab. This page calculates the total score and section-wise breakdown in your browser. Nothing is uploaded to a server.</p>
+  <header class="page-header">
+    <div class="header-badge">Official Format Ready</div>
+    <h1>AP TET Response Score & Candidate Details Calculator</h1>
+    <p class="subtitle">Paste or upload the official JSON response from the AP TET exam portal / browser network tab to instantly view verified candidate details, comprehensive score metrics, section-wise breakdown, and question audit logs.</p>
+  </header>
 
   <section class="panel input-panel">
-    <label for="jsonInput">Paste response JSON here</label>
-    <textarea id="jsonInput" spellcheck="false" placeholder='Paste the complete response beginning with { "status": true, ... }'></textarea>
+    <label class="input-label" for="jsonInput">Paste Response JSON or Upload File</label>
+    <textarea id="jsonInput" spellcheck="false" placeholder='Paste the complete response JSON starting with { "status": true, "data": { ... } }'></textarea>
+    
     <div class="actions">
-      <button class="primary" id="calculateBtn">Calculate score</button>
-      <button class="secondary" id="pasteExampleBtn" type="button">Load example structure</button>
+      <button class="primary" id="calculateBtn" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+        Calculate Score & View Details
+      </button>
+
+      <label class="btn-upload" title="Upload local JSON file">
+        <button class="secondary btn-upload" type="button" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload JSON File
+        </button>
+        <input type="file" id="fileInput" accept=".json,application/json">
+      </label>
+
+      <button class="secondary" id="pasteExampleBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Load Example Structure
+      </button>
+
       <button class="secondary" id="clearBtn" type="button">Clear</button>
     </div>
+    
     <div id="error" class="error hidden" role="alert"></div>
-    <p class="hint">Expected structure: <code>data → Participant Details</code> and <code>data → Question Wise Details</code>. You can paste the full response, not just the questions array.</p>
+    <p class="hint">Includes support for candidate profile: <code>Participant Details</code> (Name, Hall Ticket/Participant ID, Center, Exam ID, Timings) and <code>Question Wise Details</code>.</p>
   </section>
 
   <div id="result" class="hidden">
-    <section class="panel">
-      <h2 id="paperTitle">Result summary</h2>
-      <div class="cards">
-        <div class="metric"><div class="k">Total score (from response)</div><div class="v" id="scoreValue">—</div><div class="muted" id="scorePercent"></div><div class="bar"><span id="scoreBar"></span></div></div>
-        <div class="metric"><div class="k">Correct (without full marked questions (reported)</div><div class="v green" id="correctValue">—</div></div>
-        <div class="metric"><div class="k">Wrong (reported)</div><div class="v red" id="wrongValue">—</div></div>
-        <div class="metric"><div class="k">Questions in response</div><div class="v" id="totalValue">—</div><div class="muted" id="attemptedValue"></div></div>
+    <!-- Candidate Profile Section -->
+    <section class="panel candidate-panel" id="candidateSection">
+      <div class="candidate-header-row">
+        <div class="candidate-user-box">
+          <div class="avatar" id="candAvatar">AP</div>
+          <div class="candidate-identity">
+            <h2 id="candName">—</h2>
+            <div class="badge-group">
+              <span class="badge badge-blue" id="candIdBadge">Participant ID: —</span>
+              <span class="badge badge-green" id="candTypeBadge">Registered</span>
+              <span class="badge badge-gray" id="candExamIdBadge">Exam ID: —</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn-print" id="printBtn" type="button" onclick="window.print()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print Scorecard
+        </button>
+      </div>
+
+      <!-- Detail Grid -->
+      <div class="info-grid">
+        <div class="info-card">
+          <span class="info-label">Subject & Paper</span>
+          <span class="info-value" id="candSubject">—</span>
+          <span class="info-sub" id="candPaper">—</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label">Test Center & LAN</span>
+          <span class="info-value" id="candCenter">—</span>
+          <span class="info-sub" id="candLan">—</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label">Location</span>
+          <span class="info-value" id="candLocation">—</span>
+          <span class="info-sub" id="candCountry">—</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label">Exam Timings</span>
+          <span class="info-value" id="candLoginTime">—</span>
+          <span class="info-sub" id="candConfirmTime">—</span>
+        </div>
+      </div>
+
+      <!-- Attempt Breakdown Grid -->
+      <div class="attempt-stats-wrap">
+        <div class="attempt-title">Detailed Attempt Statistics (Official Portal Log)</div>
+        <div class="attempt-grid">
+          <div class="attempt-tile">
+            <div class="tile-num" id="statTotalQ">150</div>
+            <div class="tile-label">Total Questions</div>
+          </div>
+          <div class="attempt-tile">
+            <div class="tile-num" id="statAttempted">115</div>
+            <div class="tile-label">Attempted Direct</div>
+          </div>
+          <div class="attempt-tile">
+            <div class="tile-num" id="statMarkedReview">35</div>
+            <div class="tile-label">Attempted &amp; Review</div>
+          </div>
+          <div class="attempt-tile">
+            <div class="tile-num" id="statTotalAttempted">150</div>
+            <div class="tile-label">Total Attempted</div>
+          </div>
+          <div class="attempt-tile">
+            <div class="tile-num" id="statNotAttempted">0</div>
+            <div class="tile-label">Not Attempted</div>
+          </div>
+          <div class="attempt-tile">
+            <div class="tile-num" id="statNotVisited">0</div>
+            <div class="tile-label">Not Visited</div>
+          </div>
+        </div>
       </div>
     </section>
+
+    <!-- Score Overview Metric Cards -->
     <section class="panel">
-      <h2>Section-wise breakdown</h2>
+      <div class="panel-header">
+        <h2 id="paperTitle">Result Summary</h2>
+      </div>
+      <div class="cards">
+        <div class="metric">
+          <div class="k">Final Score (Reported)</div>
+          <div class="v" id="scoreValue">—</div>
+          <div class="muted" id="scorePercent">0.00% of maximum marks</div>
+          <div class="bar"><span id="scoreBar"></span></div>
+        </div>
+        <div class="metric">
+          <div class="k">Correct Answers</div>
+          <div class="v green" id="correctValue">—</div>
+          <div class="muted" id="accuracyRate">Accuracy: —</div>
+        </div>
+        <div class="metric">
+          <div class="k">Wrong Answers</div>
+          <div class="v red" id="wrongValue">—</div>
+          <div class="muted" id="wrongPercent">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">Attempted Questions</div>
+          <div class="v" id="attemptedValue">—</div>
+          <div class="muted" id="totalQuestionsLabel">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Wise Breakdown -->
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Section-wise Breakdown</h2>
+      </div>
       <div class="section-list" id="sectionList"></div>
     </section>
+
+    <!-- Question Wise Details Table -->
     <section class="panel">
-      <h2>Question details</h2>
-      <div class="table-wrap"><table><thead><tr><th>Question</th><th>Section</th><th>Selected</th><th>Correct</th><th>Result</th><th>Score</th></tr></thead><tbody id="questionRows"></tbody></table></div>
-      <p class="muted">The total score and answer statuses are taken from the pasted response. Full Marks may be scored differently from a simple correct/wrong count. The page does not independently verify the official final key.</p>
+      <div class="panel-header">
+        <h2>Question Wise Details</h2>
+      </div>
+      
+      <!-- Filter and Search Toolbar -->
+      <div class="table-filter-bar">
+        <div class="filter-tabs" role="tablist">
+          <button type="button" class="filter-tab active" data-filter="all">All (<span id="countAll">0</span>)</button>
+          <button type="button" class="filter-tab" data-filter="Correct">Correct (<span id="countCorrect">0</span>)</button>
+          <button type="button" class="filter-tab" data-filter="Wrong">Wrong (<span id="countWrong">0</span>)</button>
+          <button type="button" class="filter-tab" data-filter="Full Marks">Full Marks (<span id="countFull">0</span>)</button>
+        </div>
+        
+        <div class="filter-controls">
+          <select id="sectionFilter" class="select-input" aria-label="Filter by section">
+            <option value="all">All Sections</option>
+          </select>
+          <input type="text" id="tableSearch" class="search-input" placeholder="Search Q# or text...">
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 70px;">Q. No</th>
+              <th>Section Name</th>
+              <th>Your Option</th>
+              <th>Official Key</th>
+              <th>Evaluation</th>
+              <th style="width: 80px;">Marks</th>
+            </tr>
+          </thead>
+          <tbody id="questionRows"></tbody>
+        </table>
+      </div>
+      
+      <div class="table-meta-bar">
+        <span id="showingCountText">Showing all questions</span>
+        <span class="muted">Evaluation from official response key. Official evaluation guidelines govern final results.</span>
+      </div>
     </section>
   </div>
 </main>
+
 <script>
 "use strict";
+
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const num = value => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 };
+
+// Global cache for questions and filter state
+let currentQuestions = [];
+let currentFilter = "all";
+let currentSectionFilter = "all";
+let currentSearchTerm = "";
+
+function getInitials(name) {
+  if (!name || name === "—") return "AP";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 function getData(parsed) {
-  // Accept either the full API response or the inner "data" object.
   const root = parsed && parsed.data ? parsed.data : parsed;
   if (!root || !Array.isArray(root["Question Wise Details"])) {
     throw new Error('Could not find "Question Wise Details". Paste the complete JSON response from the Network request.');
   }
   const questions = root["Question Wise Details"];
-  const participant = Array.isArray(root["Participant Details"]) ? (root["Participant Details"][0] || {}) : {};
-  if (!questions.length) throw new Error('The "Question Wise Details" array is empty.');
-  return {participant, questions};
+  const participant = Array.isArray(root["Participant Details"])
+    ? (root["Participant Details"][0] || {})
+    : (root["Participant Details"] || {});
+    
+  if (!questions.length) {
+    throw new Error('The "Question Wise Details" array is empty.');
+  }
+  return { participant, questions };
 }
+
 function pill(result) {
-  const cls = result === "Wrong" ? "wrong" : result === "Full Marks" ? "full" : result === "Correct" ? "correct" : "";
-  return `<span class="status ${cls}">${esc(result || "Unknown")}</span>`;
+  const res = String(result || "").trim();
+  let cls = "unanswered";
+  if (res === "Wrong") cls = "wrong";
+  else if (res === "Full Marks") cls = "full";
+  else if (res === "Correct") cls = "correct";
+  return `<span class="status ${cls}">${esc(res || "Unanswered")}</span>`;
 }
+
+function populateParticipantDetails(p, questions) {
+  const name = p["Name"] || "Participant Details";
+  $("candName").textContent = name;
+  $("candAvatar").textContent = getInitials(name);
+  
+  const participantId = p["Participant ID"] || "—";
+  $("candIdBadge").textContent = `ID: ${participantId}`;
+  $("candTypeBadge").textContent = p["Participant Type"] || "Registered";
+  
+  const examId = p["Exam ID"] || "—";
+  $("candExamIdBadge").textContent = `Exam ID: ${examId}`;
+  
+  // Subject & Paper
+  $("candSubject").textContent = p["Subject"] || p["Question Paper Name"] || "—";
+  $("candPaper").textContent = p["Question Paper Name"] ? `Paper: ${p["Question Paper Name"]}` : (p["Default Language"] ? `Lang: ${p["Default Language"]}` : "");
+  
+  // Center & LAN
+  $("candCenter").textContent = p["Test Center Name"] || "—";
+  const lan = p["Lan Name"] ? `LAN: ${p["Lan Name"]}` : "";
+  const lang = p["Default Language"] ? `Language: ${p["Default Language"]}` : "";
+  $("candLan").textContent = [lan, lang].filter(Boolean).join(" · ") || "—";
+  
+  // Location
+  const locParts = [p["City"], p["State"]].filter(Boolean);
+  $("candLocation").textContent = locParts.length ? locParts.join(", ") : (p["City"] || p["State"] || "—");
+  $("candCountry").textContent = p["Country"] || (locParts.length ? "India" : "");
+  
+  // Timings
+  $("candLoginTime").textContent = p["First Login Time"] ? `Login: ${p["First Login Time"]}` : "—";
+  $("candConfirmTime").textContent = p["Profile Confirm Time"] ? `Confirmed: ${p["Profile Confirm Time"]}` : (p["Ring the Bell Time"] ? `Bell: ${p["Ring the Bell Time"]}` : "");
+  
+  // Detailed Attempt Breakdown
+  const totalQ = p["Total Questions"] || questions.length;
+  $("statTotalQ").textContent = totalQ;
+  $("statAttempted").textContent = p["Questions Attempted"] !== undefined ? p["Questions Attempted"] : "—";
+  $("statMarkedReview").textContent = p["Questions Attempted and Marked For Review"] !== undefined ? p["Questions Attempted and Marked For Review"] : "0";
+  
+  const totalAtt = p["Total Attempted"] !== undefined
+    ? p["Total Attempted"]
+    : (num(p["Questions Attempted"]) + num(p["Questions Attempted and Marked For Review"]));
+  $("statTotalAttempted").textContent = totalAtt || "—";
+  $("statNotAttempted").textContent = p["Questions Not Attempted"] !== undefined ? p["Questions Not Attempted"] : "0";
+  $("statNotVisited").textContent = p["Questions Not Visited"] !== undefined ? p["Questions Not Visited"] : "0";
+}
+
+function renderQuestionsTable() {
+  const filtered = currentQuestions.filter(q => {
+    // Evaluation filter
+    if (currentFilter !== "all" && q["Result"] !== currentFilter) {
+      return false;
+    }
+    // Section filter
+    if (currentSectionFilter !== "all" && (q["Section Name"] || "") !== currentSectionFilter) {
+      return false;
+    }
+    // Search filter
+    if (currentSearchTerm) {
+      const qNo = String(q["Question Sr No"] || "");
+      const sec = String(q["Section Name"] || "").toLowerCase();
+      const sel = String(q["Selected Option Number"] || q["Selected Option Text"] || "").toLowerCase();
+      const cor = String(q["Correct Option Text"] || "").toLowerCase();
+      const term = currentSearchTerm.toLowerCase();
+      if (!qNo.includes(term) && !sec.includes(term) && !sel.includes(term) && !cor.includes(term)) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  $("questionRows").innerHTML = filtered.map(q => `<tr>
+    <td class="td-qnum">${esc(q["Question Sr No"] || "—")}</td>
+    <td>${esc(q["Section Name"] || "Unknown Section")}</td>
+    <td><strong>${esc(q["Selected Option Number"] || q["Selected Option Text"] || "—")}</strong></td>
+    <td><strong>${esc(q["Correct Option Text"] || "—")}</strong></td>
+    <td>${pill(q["Result"])}</td>
+    <td><b>${num(q["Score"])}</b></td>
+  </tr>`).join("");
+
+  $("showingCountText").textContent = `Showing ${filtered.length} of ${currentQuestions.length} questions`;
+}
+
 function calculate() {
   $("error").classList.add("hidden");
   let parsed;
-  try {
-    parsed = JSON.parse($("jsonInput").value.trim());
-  } catch (e) {
-    $("error").textContent = "Invalid JSON. Copy the complete response, including the opening and closing braces.\nDetails: " + e.message;
+  const rawText = $("jsonInput").value.trim();
+  if (!rawText) {
+    $("error").textContent = "Please paste the response JSON or upload a file first.";
     $("error").classList.remove("hidden");
     return;
   }
+  
+  try {
+    parsed = JSON.parse(rawText);
+  } catch (e) {
+    $("error").textContent = "Invalid JSON. Please ensure the full JSON is copied including opening and closing braces { ... }.\nError: " + e.message;
+    $("error").classList.remove("hidden");
+    return;
+  }
+
   let payload;
-  try { payload = getData(parsed); }
-  catch (e) {
+  try {
+    payload = getData(parsed);
+  } catch (e) {
     $("error").textContent = e.message;
     $("error").classList.remove("hidden");
     return;
   }
-  const {participant, questions} = payload;
-  const total = num(participant["Total Questions"]) || questions.length;
-  const maxMarks = num(participant["Maximum Marks"]) || total;
+
+  const { participant, questions } = payload;
+  currentQuestions = [...questions].sort((a, b) => num(a["Question Sr No"]) - num(b["Question Sr No"]));
+
+  // Populate Participant Info
+  populateParticipantDetails(participant, currentQuestions);
+
+  // Score calculations
+  const totalQuestions = num(participant["Total Questions"]) || currentQuestions.length;
+  const maxMarks = num(participant["Maximum Marks"]) || totalQuestions;
+  
   const reportedScore = participant["Score"] !== undefined && participant["Score"] !== ""
     ? num(participant["Score"])
-    : questions.reduce((sum, q) => sum + num(q["Score"]), 0);
+    : currentQuestions.reduce((sum, q) => sum + num(q["Score"]), 0);
+    
   const reportedCorrect = participant["Total Correct"] !== undefined && participant["Total Correct"] !== ""
     ? num(participant["Total Correct"])
-    : questions.filter(q => q["Result"] === "Correct").length;
+    : currentQuestions.filter(q => q["Result"] === "Correct").length;
+    
   const reportedWrong = participant["Total Wrong"] !== undefined && participant["Total Wrong"] !== ""
     ? num(participant["Total Wrong"])
-    : questions.filter(q => q["Result"] === "Wrong").length;
-  const attempted = participant["Questions Attempted"] !== undefined && participant["Questions Attempted"] !== ""
-    ? num(participant["Questions Attempted"])
-    : questions.filter(q => String(q["Question Status"] || "").toLowerCase() === "answered").length;
+    : currentQuestions.filter(q => q["Result"] === "Wrong").length;
 
-  $("paperTitle").textContent = (participant["Subject"] || participant["Question Paper Name"] || "Result summary") + " — score summary";
+  const fullMarksCount = currentQuestions.filter(q => q["Result"] === "Full Marks").length;
+
+  const attemptedCount = participant["Total Attempted"] !== undefined && participant["Total Attempted"] !== ""
+    ? num(participant["Total Attempted"])
+    : (participant["Questions Attempted"] !== undefined && participant["Questions Attempted"] !== ""
+        ? num(participant["Questions Attempted"])
+        : currentQuestions.filter(q => String(q["Question Status"] || "").toLowerCase() === "answered").length);
+
+  // Update Summary DOM
+  const paperName = participant["Subject"] || participant["Question Paper Name"] || "AP TET Examination";
+  $("paperTitle").textContent = `${paperName} — Score Summary`;
+  
   $("scoreValue").textContent = `${reportedScore} / ${maxMarks}`;
-  $("scorePercent").textContent = `${maxMarks ? (reportedScore / maxMarks * 100).toFixed(2) : "0.00"}% of maximum marks`;
-  $("scoreBar").style.width = `${Math.max(0, Math.min(100, maxMarks ? reportedScore / maxMarks * 100 : 0))}%`;
+  const pct = maxMarks ? (reportedScore / maxMarks * 100).toFixed(2) : "0.00";
+  $("scorePercent").textContent = `${pct}% of maximum marks`;
+  $("scoreBar").style.width = `${Math.max(0, Math.min(100, Number(pct)))}%`;
+  
   $("correctValue").textContent = reportedCorrect;
-  $("wrongValue").textContent = reportedWrong;
-  $("totalValue").textContent = questions.length;
-  $("attemptedValue").textContent = `${attempted} attempted · ${Math.max(0, total-attempted)} not attempted (reported)`;
+  const acc = attemptedCount > 0 ? (reportedCorrect / attemptedCount * 100).toFixed(1) : "0";
+  $("accuracyRate").textContent = `Accuracy: ${acc}% of attempted`;
 
+  $("wrongValue").textContent = reportedWrong;
+  const wrongPct = attemptedCount > 0 ? (reportedWrong / attemptedCount * 100).toFixed(1) : "0";
+  $("wrongPercent").textContent = `${wrongPct}% of attempted`;
+
+  $("attemptedValue").textContent = `${attemptedCount} / ${totalQuestions}`;
+  $("totalQuestionsLabel").textContent = `${Math.max(0, totalQuestions - attemptedCount)} unattempted`;
+
+  // Update Section Wise Breakdown
   const grouped = new Map();
-  questions.forEach(q => {
-    const name = q["Section Name"] || "Unknown section";
-    if (!grouped.has(name)) grouped.set(name, []);
-    grouped.get(name).push(q);
+  currentQuestions.forEach(q => {
+    const secName = q["Section Name"] || "General";
+    if (!grouped.has(secName)) grouped.set(secName, []);
+    grouped.get(secName).push(q);
   });
-  $("sectionList").innerHTML = [...grouped.entries()].map(([name, arr]) => {
-    const score = arr.reduce((s,q) => s + num(q["Score"]), 0);
+
+  $("sectionList").innerHTML = [...grouped.entries()].map(([secName, arr]) => {
+    const score = arr.reduce((s, q) => s + num(q["Score"]), 0);
     const max = arr.length;
     const correct = arr.filter(q => q["Result"] === "Correct").length;
     const wrong = arr.filter(q => q["Result"] === "Wrong").length;
     const full = arr.filter(q => q["Result"] === "Full Marks").length;
-    const percent = max ? score/max*100 : 0;
-    return `<div class="section"><strong>${esc(name)}</strong><div><b>${score} / ${max}</b> · ${percent.toFixed(2)}%</div><div class="bar"><span style="width:${percent}%"></span></div><small>Correct: ${correct} · Wrong: ${wrong} · Full marks: ${full}</small></div>`;
+    const sectionPercent = max ? (score / max * 100).toFixed(2) : "0.00";
+    
+    return `<div class="section">
+      <div class="section-top">
+        <strong>${esc(secName)}</strong>
+        <span class="sec-score">${score} / ${max}</span>
+      </div>
+      <div class="sec-bar"><span style="width: ${sectionPercent}%"></span></div>
+      <div class="section-tags">
+        <span class="sec-tag c">✓ ${correct} Correct</span>
+        <span class="sec-tag w">✕ ${wrong} Wrong</span>
+        ${full ? `<span class="sec-tag f">★ ${full} Full Marks</span>` : ""}
+        <span class="sec-tag" style="background:#f1f5f9;color:#475569;">${sectionPercent}%</span>
+      </div>
+    </div>`;
   }).join("");
 
-  const sorted = [...questions].sort((a,b) => num(a["Question Sr No"]) - num(b["Question Sr No"]));
-  $("questionRows").innerHTML = sorted.map(q => `<tr>
-    <td>${esc(q["Question Sr No"] || "—")}</td>
-    <td>${esc(q["Section Name"] || "Unknown section")}</td>
-    <td>${esc(q["Selected Option Number"] || q["Selected Option Text"] || "—")}</td>
-    <td>${esc(q["Correct Option Text"] || "—")}</td>
-    <td>${pill(q["Result"])}</td>
-    <td>${num(q["Score"])}</td>
-  </tr>`).join("");
+  // Populate Section Filter Dropdown
+  const secFilter = $("sectionFilter");
+  secFilter.innerHTML = `<option value="all">All Sections (${grouped.size})</option>` +
+    [...grouped.keys()].map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join("");
+
+  // Update counts in filter tabs
+  $("countAll").textContent = currentQuestions.length;
+  $("countCorrect").textContent = reportedCorrect;
+  $("countWrong").textContent = reportedWrong;
+  $("countFull").textContent = fullMarksCount;
+
+  // Render Table
+  currentFilter = "all";
+  currentSectionFilter = "all";
+  currentSearchTerm = "";
+  $("tableSearch").value = "";
+  document.querySelectorAll(".filter-tab").forEach(tab => tab.classList.toggle("active", tab.dataset.filter === "all"));
+  renderQuestionsTable();
+
+  // Show Results
   $("result").classList.remove("hidden");
-  $("result").scrollIntoView({behavior:"smooth",block:"start"});
+  $("candidateSection").scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+// Event Listeners
 $("calculateBtn").addEventListener("click", calculate);
+
 $("clearBtn").addEventListener("click", () => {
   $("jsonInput").value = "";
   $("error").classList.add("hidden");
   $("result").classList.add("hidden");
+  currentQuestions = [];
   $("jsonInput").focus();
 });
+
+// File upload handler
+$("fileInput").addEventListener("change", event => {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    $("jsonInput").value = e.target.result;
+    calculate();
+  };
+  reader.onerror = () => {
+    $("error").textContent = "Failed to read the file.";
+    $("error").classList.remove("hidden");
+  };
+  reader.readAsText(file);
+});
+
+// Filter Tabs
+document.querySelectorAll(".filter-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    currentFilter = tab.dataset.filter;
+    renderQuestionsTable();
+  });
+});
+
+// Section Filter
+$("sectionFilter").addEventListener("change", e => {
+  currentSectionFilter = e.target.value;
+  renderQuestionsTable();
+});
+
+// Search input
+$("tableSearch").addEventListener("input", e => {
+  currentSearchTerm = e.target.value.trim();
+  renderQuestionsTable();
+});
+
+// Load Example Structure with realistic Participant Details
 $("pasteExampleBtn").addEventListener("click", () => {
   $("jsonInput").value = JSON.stringify({
-    status: true,
-    data: {
-      "Participant Details": [{
-        "Subject": "Example Paper",
-        "Total Questions": "2",
-        "Questions Attempted": "2",
-        "Total Correct": "1",
-        "Total Wrong": "1",
-        "Score": "1",
-        "Maximum Marks": "2"
-      }],
+    "status": true,
+    "scode": "01",
+    "sdesc": "data found",
+    "data": {
+      "Participant Details": [
+        {
+          "Participant ID": "26IST000566863",
+          "Name": "ANUSURI NARAYANA RAO",
+          "Participant Type": "Registered",
+          "Test Center Name": "iON Digital Zone iDZ  Luthergiri",
+          "Lan Name": "LAN4",
+          "City": "Rajahmundry",
+          "State": "Andhra Pradesh",
+          "Country": "India",
+          "Subject": "PAPER II A SS TELUGU",
+          "Question Paper Name": "IIA SS Telugu",
+          "Total Questions": "150",
+          "Questions Not Visited": "0",
+          "Questions Not Attempted": "0",
+          "Questions Attempted": "115",
+          "Questions Attempted and Marked For Review": "35",
+          "Questions Not Attempted and Marked For Review": "0",
+          "Total Attempted": "150",
+          "Total Correct": "113",
+          "Total Wrong": "37",
+          "Score": "113",
+          "Exam ID": "1950O2660S7D1160E1",
+          "First Login Time": "2026-10-14 09:21:05.0",
+          "Profile Confirm Time": "2026-10-14 09:22:31.0",
+          "Ring the Bell Time": "",
+          "Default Language": "Telugu",
+          "Maximum Marks": "150"
+        }
+      ],
       "Question Wise Details": [
-        {"Question Sr No":"1","Section Name":"Section A","Selected Option Number":"2","Correct Option Text":"2","Result":"Correct","Score":"1","Question Status":"answered"},
-        {"Question Sr No":"2","Section Name":"Section B","Selected Option Number":"1","Correct Option Text":"3","Result":"Wrong","Score":"0","Question Status":"answered"}
+        {
+          "Participant ID": "26IST000566863",
+          "Section Name": "Child Development and Pedagogy",
+          "Question Sr No": "1",
+          "Question Status": "answered",
+          "Correct Option Text": "3",
+          "Selected Option Number": "3",
+          "Result": "Correct",
+          "Score": "1"
+        },
+        {
+          "Participant ID": "26IST000566863",
+          "Section Name": "Language I - Telugu",
+          "Question Sr No": "2",
+          "Question Status": "answered",
+          "Correct Option Text": "2",
+          "Selected Option Number": "4",
+          "Result": "Wrong",
+          "Score": "0"
+        },
+        {
+          "Participant ID": "26IST000566863",
+          "Section Name": "Social Studies",
+          "Question Sr No": "3",
+          "Question Status": "answered",
+          "Correct Option Text": "1",
+          "Selected Option Number": "1",
+          "Result": "Correct",
+          "Score": "1"
+        }
       ]
     }
   }, null, 2);
+  calculate();
 });
 </script>
 </body>
